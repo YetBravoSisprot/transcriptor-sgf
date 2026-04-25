@@ -41,8 +41,31 @@ export default function Home() {
 
   const startRecording = async () => {
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      const mediaRecorder = new MediaRecorder(stream);
+      // 1. Obtener audio del sistema/pestaña (para escuchar a los demás)
+      // Nota: El usuario debe marcar "Compartir audio" en el diálogo del navegador
+      const screenStream = await navigator.mediaDevices.getDisplayMedia({
+        video: true, // Necesario para que aparezca la opción de compartir audio
+        audio: true
+      });
+
+      // 2. Obtener audio del micrófono (para escucharte a ti)
+      const micStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+
+      // 3. Mezclar ambos audios usando AudioContext
+      const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+      const destination = audioContext.createMediaStreamDestination();
+
+      const micSource = audioContext.createMediaStreamSource(micStream);
+      const screenSource = audioContext.createMediaStreamSource(screenStream);
+
+      // Conectar ambos al destino común
+      micSource.connect(destination);
+      screenSource.connect(destination);
+
+      // El stream final contiene ambos audios
+      const combinedStream = destination.stream;
+
+      const mediaRecorder = new MediaRecorder(combinedStream, { mimeType: 'audio/webm' });
       mediaRecorderRef.current = mediaRecorder;
       audioChunksRef.current = [];
 
@@ -54,9 +77,12 @@ export default function Home() {
 
       mediaRecorder.onstop = () => {
         const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
-        const recordedFile = new File([audioBlob], `grabacion_${Date.now()}.webm`, { type: 'audio/webm' });
+        const recordedFile = new File([audioBlob], `reunion_${Date.now()}.webm`, { type: 'audio/webm' });
         setFile(recordedFile);
-        stream.getTracks().forEach(track => track.stop());
+        
+        // Detener todos los tracks
+        [screenStream, micStream].forEach(s => s.getTracks().forEach(t => t.stop()));
+        audioContext.close();
       };
 
       mediaRecorder.start();
@@ -66,8 +92,14 @@ export default function Home() {
         setRecordingTime(prev => prev + 1);
       }, 1000);
       setError('');
+
+      // Si el usuario deja de compartir pantalla manualmente, detener la grabación
+      screenStream.getVideoTracks()[0].onended = () => {
+        stopRecording();
+      };
+
     } catch (err) {
-      setError('No se pudo acceder al micrófono. Verifica los permisos.');
+      setError('Para grabar la reunión completa, debes aceptar compartir pantalla y marcar "Compartir audio".');
       console.error(err);
     }
   };
