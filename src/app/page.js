@@ -216,7 +216,7 @@ export default function Home() {
         </div>
 
         <div style="border-top: 4px solid #f59e0b; padding-top: 20px; margin-bottom: 40px;">
-          <div style="font-size: 11pt; line-height: 1.6; text-align: left; color: #1a1a1a;">
+          <div style="font-size: 11pt; line-height: 1.5; mso-line-height-rule: exactly; text-align: left; color: #1a1a1a;">
             ${formattedMinuta}
           </div>
         </div>
