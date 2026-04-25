@@ -52,14 +52,16 @@ export default function Login() {
           </div>
           <h1 className="login-title">
             <span className="sgf-white">SGF</span>
-            <span className="ia-accent">IA</span>
+            <div className="ia-accent">IA</div>
           </h1>
           <h2 className="login-sub-title">Transcriptor Pro</h2>
         </div>
 
-        <p className="login-description">
-          Inteligencia Artificial avanzada para la gestión de reuniones de Sisprot Global Fiber.
-        </p>
+        <div className="login-description-container">
+          <p className="login-description">
+            Inteligencia Artificial avanzada para la gestión de reuniones de Sisprot Global Fiber.
+          </p>
+        </div>
 
         <div className="feature-badges">
           <div className="badge">
