@@ -5,7 +5,6 @@ import { useRouter } from 'next/navigation';
 import Script from 'next/script';
 import ReactMarkdown from 'react-markdown';
 import Image from 'next/image';
-// import logo from '@/app/logo.png'; // Eliminado para usar ruta pública
 const logoPath = '/logo.png';
 
 export default function Home() {
