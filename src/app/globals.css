@@ -532,8 +532,8 @@ footer {
 /* Login Enhanced Styles */
 .ia-accent {
   color: var(--accent-orange);
-  margin-left: 0.2rem;
   font-weight: 900;
+  line-height: 1;
 }
 
 .login-sub-title {
@@ -541,15 +541,21 @@ footer {
   color: var(--text-muted);
   text-transform: uppercase;
   letter-spacing: 3px;
-  margin-top: -0.5rem;
+  margin-top: 1rem;
   font-weight: 300;
+}
+
+.login-description-container {
+  display: flex;
+  justify-content: center;
+  width: 100%;
 }
 
 .login-description {
   text-align: center;
   color: var(--text-muted);
   font-size: 0.95rem;
-  line-height: 1.5;
+  line-height: 1.6;
   margin-bottom: 2rem;
   max-width: 320px;
 }
