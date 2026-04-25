@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import ReactMarkdown from 'react-markdown';
 import Image from 'next/image';
@@ -12,8 +12,14 @@ export default function Home() {
   const [minuta, setMinuta] = useState('');
   const [error, setError] = useState('');
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [isRecording, setIsRecording] = useState(false);
+  const [recordingTime, setRecordingTime] = useState(0);
   const router = useRouter();
   
+  const mediaRecorderRef = useRef(null);
+  const audioChunksRef = useRef([]);
+  const timerRef = useRef(null);
+
   // Metadata fields
   const [title, setTitle] = useState('');
   const [date, setDate] = useState('');
@@ -27,7 +33,58 @@ export default function Home() {
     } else {
       setIsAuthenticated(true);
     }
+    
+    return () => {
+      if (timerRef.current) clearInterval(timerRef.current);
+    };
   }, [router]);
+
+  const startRecording = async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const mediaRecorder = new MediaRecorder(stream);
+      mediaRecorderRef.current = mediaRecorder;
+      audioChunksRef.current = [];
+
+      mediaRecorder.ondataavailable = (event) => {
+        if (event.data.size > 0) {
+          audioChunksRef.current.push(event.data);
+        }
+      };
+
+      mediaRecorder.onstop = () => {
+        const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
+        const recordedFile = new File([audioBlob], `grabacion_${Date.now()}.webm`, { type: 'audio/webm' });
+        setFile(recordedFile);
+        stream.getTracks().forEach(track => track.stop());
+      };
+
+      mediaRecorder.start();
+      setIsRecording(true);
+      setRecordingTime(0);
+      timerRef.current = setInterval(() => {
+        setRecordingTime(prev => prev + 1);
+      }, 1000);
+      setError('');
+    } catch (err) {
+      setError('No se pudo acceder al micrófono. Verifica los permisos.');
+      console.error(err);
+    }
+  };
+
+  const stopRecording = () => {
+    if (mediaRecorderRef.current && isRecording) {
+      mediaRecorderRef.current.stop();
+      setIsRecording(false);
+      clearInterval(timerRef.current);
+    }
+  };
+
+  const formatTime = (seconds) => {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins}:${secs.toString().padStart(2, '0')}`;
+  };
 
   const handleLogout = () => {
     localStorage.removeItem('user');
@@ -129,13 +186,31 @@ export default function Home() {
             <p className="upload-subtitle">Arrastra tu video/audio aquí o usa la grabación en vivo</p>
 
             <div className="button-group">
-              <button type="button" className="btn btn-dark">
+              <button 
+                type="button" 
+                className="btn btn-dark" 
+                onClick={() => document.getElementById('audio-input').click()} 
+                disabled={isRecording}
+              >
                 <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
                 Buscar archivo
               </button>
-              <button type="button" className="btn btn-orange">
-                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" x2="12" y1="19" y2="22"/></svg>
-                Grabar en Vivo
+              <button 
+                type="button" 
+                className={`btn ${isRecording ? 'btn-red' : 'btn-orange'}`}
+                onClick={isRecording ? stopRecording : startRecording}
+              >
+                {isRecording ? (
+                  <>
+                    <div className="recording-dot"></div>
+                    Detener ({formatTime(recordingTime)})
+                  </>
+                ) : (
+                  <>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" x2="12" y1="19" y2="22"/></svg>
+                    Grabar en Vivo
+                  </>
+                )}
               </button>
             </div>
 
