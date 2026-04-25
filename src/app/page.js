@@ -5,7 +5,8 @@ import { useRouter } from 'next/navigation';
 import Script from 'next/script';
 import ReactMarkdown from 'react-markdown';
 import Image from 'next/image';
-import logo from '@/app/logo.png';
+// import logo from '@/app/logo.png'; // Eliminado para usar ruta pública
+const logoPath = '/logo.png';
 
 export default function Home() {
   const [file, setFile] = useState(null);
@@ -41,7 +42,7 @@ export default function Home() {
     
     // Convertir logo a Base64 para exportaciones
     const img = new window.Image();
-    img.src = logo.src;
+    img.src = logoPath;
     img.crossOrigin = "Anonymous";
     img.onload = () => {
       const canvas = document.createElement('canvas');
@@ -302,7 +303,7 @@ export default function Home() {
 
       <header>
         <div className="logo-container">
-          <Image src={logo} alt="SGF Logo" width={80} height={40} style={{ objectFit: 'contain' }} />
+          <Image src={logoPath} alt="SGF Logo" width={80} height={40} style={{ objectFit: 'contain' }} />
           <div className="spark-icon">
             <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" style={{ color: 'var(--accent-blue)' }}><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/></svg>
           </div>
