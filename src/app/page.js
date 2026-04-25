@@ -222,7 +222,7 @@ export default function Home() {
         </div>
         
         <div style="margin-top: 60px; border-top: 1px solid #f59e0b; padding-top: 15px; text-align: center; font-size: 10px; color: #999;">
-          <strong>SGF IA Transcriptor Pro</strong> - Documento Corporativo de Sisprot Global Fiber<br/>
+          <strong>SGF Transcriptor Pro</strong> - Documento Corporativo de Sisprot Global Fiber<br/>
           Generado el ${new Date().toLocaleDateString()}
         </div>
       </div>
@@ -302,12 +302,11 @@ export default function Home() {
           </div>
           <h1 className="title">
             <span className="sgf">SGF</span>
-            <span className="ia">IA</span>
-            <span className="transcripcion">Transcripción</span>
+            <span className="transcripcion">Transcriptor Pro</span>
           </h1>
         </div>
         <p className="tagline">
-          Generación inteligente de minutas y transcripciones profesionales para Sisprot Global Fiber.
+          Generación de minutas y transcripciones profesionales para Sisprot Global Fiber.
         </p>
       </header>
 
@@ -358,7 +357,30 @@ export default function Home() {
 
             {file && (
               <div className="file-info-badge">
-                Grabación lista para procesar: <strong>{file.name}</strong>
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ marginRight: '8px', color: 'var(--accent-blue)' }}><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" x2="12" y1="19" y2="22"/></svg>
+                <span>Grabación lista para procesar: <strong>{file.name}</strong></span>
+                <button 
+                  type="button"
+                  onClick={() => setFile(null)} 
+                  className="btn-delete-file"
+                  title="Eliminar grabación"
+                  style={{ 
+                    background: 'none', 
+                    border: 'none', 
+                    color: '#ef4444', 
+                    cursor: 'pointer', 
+                    marginLeft: '12px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    padding: '4px',
+                    borderRadius: '4px',
+                    transition: 'background 0.2s'
+                  }}
+                  onMouseOver={(e) => e.currentTarget.style.background = 'rgba(239, 68, 68, 0.1)'}
+                  onMouseOut={(e) => e.currentTarget.style.background = 'none'}
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" x2="10" y1="11" y2="17"/><line x1="14" x2="14" y1="11" y2="17"/></svg>
+                </button>
               </div>
             )}
           </div>
