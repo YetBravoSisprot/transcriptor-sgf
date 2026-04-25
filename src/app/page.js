@@ -180,13 +180,16 @@ export default function Home() {
         setMinuta(data.minuta);
         setTranscription(data.transcription);
       } else {
+        console.error('Error del servidor:', data);
         setError(data.details || data.error || 'Algo salió mal al procesar el audio.');
       }
     } catch (err) {
-      setError('Error de conexión con el servidor.');
+      console.error('Error de red/conexión:', err);
+      setError('Error de conexión con el servidor. Es posible que el archivo sea demasiado grande o la conexión haya expirado.');
     } finally {
       setIsLoading(false);
     }
+
   };
 
   const copyToClipboard = () => {
