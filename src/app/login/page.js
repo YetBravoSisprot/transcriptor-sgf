@@ -3,7 +3,8 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
-import logo from '@/app/logo.png';
+// import logo from '@/app/logo.png'; 
+const logoPath = '/logo.png';
 
 export default function Login() {
   const [email, setEmail] = useState('');
@@ -48,7 +49,7 @@ export default function Login() {
       <div className="login-card animate-fade">
         <div className="login-header">
           <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '1.5rem' }}>
-            <Image src={logo} alt="SGF Logo" width={120} height={60} style={{ objectFit: 'contain' }} />
+            <Image src={logoPath} alt="SGF Logo" width={120} height={60} style={{ objectFit: 'contain' }} />
           </div>
           <h1 className="login-title">
             <span className="sgf-white">SGF</span>
