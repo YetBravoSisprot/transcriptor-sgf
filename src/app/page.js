@@ -407,9 +407,11 @@ export default function Home() {
                   const selectedDate = new Date(val + 'T00:00:00');
                   const day = selectedDate.getDay();
                   if (day === 0 || day === 6) {
-                    alert('Las minutas corporativas solo pueden registrarse de Lunes a Viernes.');
+                    setError('Las minutas corporativas solo pueden registrarse de Lunes a Viernes.');
+                    setDate('');
                     return;
                   }
+                  setError('');
                   setDate(val);
                 }}
                 max={localToday}
