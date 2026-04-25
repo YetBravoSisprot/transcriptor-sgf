@@ -18,14 +18,17 @@ export async function POST(request) {
     const buffer = Buffer.from(bytes);
 
     // Procesar el audio con Gemini
-    const minuta = await processAudioForMinuta(buffer, file.type, file.name, {
+    const result = await processAudioForMinuta(buffer, file.type, file.name, {
       title,
       date,
       department,
       participants
     });
 
-    return NextResponse.json({ minuta });
+    return NextResponse.json({ 
+      minuta: result.minuta, 
+      transcription: result.transcription 
+    });
   } catch (error) {
     console.error('Error procesando el audio:', error);
     return NextResponse.json({ 
