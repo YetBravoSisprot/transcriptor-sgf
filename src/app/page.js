@@ -230,7 +230,8 @@ export default function Home() {
   };
 
   const downloadPdf = async () => {
-    const { jsPDF } = await import('jspdf');
+    const jspdfModule = await import('jspdf');
+    const jsPDF = jspdfModule.jsPDF || jspdfModule.default;
     const htmlContent = buildExportHtml();
     
     // Crear un elemento temporal para el renderizado
