@@ -19,6 +19,10 @@ export default function Home() {
   const [isRecording, setIsRecording] = useState(false);
   const [recordingTime, setRecordingTime] = useState(0);
   const router = useRouter();
+
+  // Obtener fecha local de hoy para restricciones del calendario
+  const today = new Date();
+  const localToday = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
   
   const mediaRecorderRef = useRef(null);
   const audioChunksRef = useRef([]);
@@ -386,7 +390,7 @@ export default function Home() {
                   }
                   setDate(val);
                 }}
-                max={new Date().toISOString().split('T')[0]}
+                max={localToday}
                 required
               />
             </div>
