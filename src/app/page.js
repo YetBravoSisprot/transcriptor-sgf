@@ -208,20 +208,20 @@ export default function Home() {
     const formattedMinuta = cleanMinuta.replace(/\n/g, '<br/>');
 
     return `
-      <div style="font-family: Arial, Helvetica, sans-serif; padding: 20px; color: #000; max-width: 800px; margin: auto;">
-        <div style="text-align: center; margin-bottom: 30px;">
-          ${logoBase64 ? `<img src="${logoBase64}" width="120" height="60" style="width: 120px; height: 60px; object-fit: contain; margin-bottom: 10px;" />` : ''}
-          <div style="font-size: 22px; font-weight: bold; color: #0a192f; margin: 0;">SISPROT GLOBAL FIBER</div>
-          <div style="font-size: 11px; color: #666; text-transform: uppercase; letter-spacing: 2px; margin-top: 5px;">Acta de Reunión Corporativa</div>
+      <div style="font-family: 'Arial', sans-serif; line-height: 1.5; mso-line-height-rule: exactly;">
+        <div style="text-align: center; margin-bottom: 25pt;">
+          ${logoBase64 ? `<img src="${logoBase64}" width="120" height="60" style="width: 120pt; height: 60pt; object-fit: contain;" />` : ''}
+          <div style="font-size: 18pt; font-weight: bold; color: #0a192f; margin-top: 10pt;">SISPROT GLOBAL FIBER</div>
+          <div style="font-size: 10pt; color: #666; text-transform: uppercase; letter-spacing: 2pt;">Acta de Reunión Corporativa</div>
         </div>
 
-        <div style="border-top: 4px solid #f59e0b; padding-top: 20px; margin-bottom: 40px;">
-          <div style="font-size: 11pt; line-height: 1.5; mso-line-height-rule: exactly; text-align: left; color: #1a1a1a;">
+        <div style="border-top: 3pt solid #f59e0b; padding-top: 15pt;">
+          <div style="font-size: 11pt; line-height: 1.5; mso-line-height-rule: exactly; text-align: left; color: #1a1a1a; white-space: pre-wrap;">
             ${formattedMinuta}
           </div>
         </div>
         
-        <div style="margin-top: 60px; border-top: 1px solid #f59e0b; padding-top: 15px; text-align: center; font-size: 10px; color: #999;">
+        <div style="margin-top: 40pt; border-top: 1pt solid #f59e0b; padding-top: 10pt; text-align: center; font-size: 9pt; color: #999;">
           <strong>SGF Transcriptor Pro</strong> - Documento Corporativo de Sisprot Global Fiber<br/>
           Generado el ${new Date().toLocaleDateString()}
         </div>
