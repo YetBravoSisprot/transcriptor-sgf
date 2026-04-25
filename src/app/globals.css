@@ -510,3 +510,22 @@ footer {
   align-items: center;
   background: rgba(255, 255, 255, 0.01);
 }
+.edit-textarea {
+  width: 100%;
+  min-height: 400px;
+  background: rgba(0, 0, 0, 0.2);
+  border: 1px solid var(--card-border);
+  border-radius: 12px;
+  color: var(--text-light);
+  padding: 1.5rem;
+  font-family: inherit;
+  font-size: 1rem;
+  line-height: 1.6;
+  resize: vertical;
+  outline: none;
+  transition: border-color 0.3s ease;
+}
+
+.edit-textarea:focus {
+  border-color: var(--accent-orange);
+}
