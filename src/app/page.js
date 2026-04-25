@@ -197,21 +197,28 @@ export default function Home() {
   };
 
   const buildExportHtml = () => {
+    // Eliminar emojis para evitar corrupción en PDF (jsPDF no los soporta con fuentes estándar)
+    const cleanMinuta = minuta.replace(/[\u{1F300}-\u{1F9FF}]|[\u{2700}-\u{27BF}]|[\u{2600}-\u{26FF}]/gu, '');
+
     return `
-      <div style="font-family: 'Times New Roman', serif; padding: 50px; color: #000; max-width: 800px; margin: auto; line-height: 1.5;">
-        <div style="text-align: center; margin-bottom: 40px;">
-          ${logoBase64 ? `<img src="${logoBase64}" style="width: 100px; height: auto; margin-bottom: 10px;" />` : ''}
-          <h2 style="margin: 0; font-size: 16px; letter-spacing: 1px;">SISPROT GLOBAL FIBER</h2>
-          <p style="margin: 5px 0; font-size: 10px; color: #666;">ACTA DE REUNIÓN CORPORATIVA</p>
+      <div style="font-family: 'Times New Roman', serif; padding: 30px; color: #000; max-width: 800px; margin: auto;">
+        <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px;">
+          <tr>
+            <td style="text-align: center;">
+              ${logoBase64 ? `<img src="${logoBase64}" width="100" style="width: 100px; height: auto; margin-bottom: 10px;" />` : ''}
+              <div style="font-size: 16px; font-weight: bold; margin: 0;">SISPROT GLOBAL FIBER</div>
+              <div style="font-size: 10px; color: #666; margin-top: 5px;">ACTA DE REUNIÓN CORPORATIVA</div>
+            </td>
+          </tr>
+        </table>
+        
+        <div style="font-size: 12pt; line-height: 1.6; text-align: justify; white-space: pre-wrap;">
+          ${cleanMinuta}
         </div>
         
-        <div style="white-space: pre-wrap; font-size: 12pt;">
-          ${minuta}
-        </div>
-        
-        <div style="margin-top: 60px; border-top: 1px solid #eee; pt: 20px; text-align: center; font-size: 9px; color: #999;">
-          Este documento es una minuta generada automáticamente por SGF IA.<br/>
-          © ${new Date().getFullYear()} Sisprot Global Fiber
+        <div style="margin-top: 50px; border-top: 1px dotted #ccc; padding-top: 15px; text-align: center; font-size: 9px; color: #888;">
+          Documento generado por SGF IA - Sisprot Global Fiber<br/>
+          © ${new Date().getFullYear()}
         </div>
       </div>
     `;
