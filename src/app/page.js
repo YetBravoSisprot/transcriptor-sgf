@@ -197,29 +197,36 @@ export default function Home() {
   };
 
   const buildExportHtml = () => {
-    // Eliminar emojis para evitar corrupción en PDF (jsPDF no los soporta con fuentes estándar)
+    // Eliminar emojis para evitar corrupción en PDF
     const cleanMinuta = minuta.replace(/[\u{1F300}-\u{1F9FF}]|[\u{2700}-\u{27BF}]|[\u{2600}-\u{26FF}]/gu, '');
+    
+    // Convertir saltos de línea en <br/> para que Word los respete
+    const formattedMinuta = cleanMinuta.replace(/\n/g, '<br/>');
 
     return `
-      <div style="font-family: 'Times New Roman', serif; padding: 30px; color: #000; max-width: 800px; margin: auto;">
-        <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px;">
+      <div style="font-family: 'Times New Roman', serif; padding: 40px; color: #000; max-width: 800px; margin: auto; border: 1px solid #f1f1f1;">
+        <table style="width: 100%; border-collapse: collapse; margin-bottom: 30px;">
           <tr>
-            <td style="text-align: center;">
-              ${logoBase64 ? `<img src="${logoBase64}" width="100" style="width: 100px; height: auto; margin-bottom: 10px;" />` : ''}
-              <div style="font-size: 16px; font-weight: bold; margin: 0;">SISPROT GLOBAL FIBER</div>
-              <div style="font-size: 10px; color: #666; margin-top: 5px;">ACTA DE REUNIÓN CORPORATIVA</div>
+            <td style="text-align: center; border-bottom: 4px solid #f59e0b; padding-bottom: 20px;">
+              ${logoBase64 ? `<img src="${logoBase64}" width="120" style="width: 120px; height: auto; margin-bottom: 10px;" />` : ''}
+              <div style="font-size: 20px; font-weight: bold; color: #0a192f; margin: 0;">SISPROT GLOBAL FIBER</div>
+              <div style="font-size: 11px; color: #666; text-transform: uppercase; letter-spacing: 2px; margin-top: 5px;">Acta de Reunión Corporativa</div>
             </td>
           </tr>
         </table>
         
-        <div style="font-size: 12pt; line-height: 1.6; text-align: justify; white-space: pre-wrap;">
-          ${cleanMinuta}
+        <div style="font-size: 11.5pt; line-height: 1.5; text-align: justify; color: #1a1a1a;">
+          ${formattedMinuta}
         </div>
         
-        <div style="margin-top: 50px; border-top: 1px dotted #ccc; padding-top: 15px; text-align: center; font-size: 9px; color: #888;">
-          Documento generado por SGF IA - Sisprot Global Fiber<br/>
-          © ${new Date().getFullYear()}
-        </div>
+        <table style="width: 100%; margin-top: 60px; border-top: 1px solid #f59e0b;">
+          <tr>
+            <td style="padding-top: 15px; text-align: center; font-size: 9px; color: #999;">
+              <strong>SGF IA Transcriptor Pro</strong> - Documento de Confidencialidad Corporativa<br/>
+              © ${new Date().getFullYear()} Sisprot Global Fiber
+            </td>
+          </tr>
+        </table>
       </div>
     `;
   };
