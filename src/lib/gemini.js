@@ -77,6 +77,8 @@ export async function processAudioForMinuta(audioBuffer, mimeType, fileName, met
       Reglas adicionales:
       - Redacta en tercera persona.
       - Sé concreto, evita redundancias.
+      - PRECISIÓN EXTREMA: Presta especial atención a nombres propios, títulos y géneros (ej. Si escuchas "Sr. Elisaul", no escribas "Srta. Lisbeth").
+      - VERACIDAD: No inventes tareas ni asignes responsables que no se mencionen explícitamente en el audio. Si no hay un responsable claro, indica [No asignado].
       - Organiza la información en bullets cuando sea necesario.
       - Si falta información, deja el campo como placeholder entre corchetes.
 
