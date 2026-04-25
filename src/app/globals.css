@@ -246,6 +246,17 @@ footer {
   background: rgba(255, 255, 255, 0.08);
 }
 
+.input-group input[type="date"]::-webkit-calendar-picker-indicator {
+  filter: invert(1);
+  cursor: pointer;
+  opacity: 0.6;
+  transition: opacity 0.2s;
+}
+
+.input-group input[type="date"]::-webkit-calendar-picker-indicator:hover {
+  opacity: 1;
+}
+
 .spark-icon {
   display: flex;
   align-items: center;
