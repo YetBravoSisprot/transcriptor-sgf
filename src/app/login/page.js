@@ -3,7 +3,6 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
-// import logo from '@/app/logo.png'; 
 const logoPath = '/logo.png';
 
 export default function Login() {
