@@ -1,7 +1,7 @@
 import "./globals.css";
 
 export const metadata = {
-  title: "SGF Transcriptor Pro | Minutas Corporativas",
+  title: "SGF Transcriptor Pro",
   description: "Gestión avanzada de reuniones y generación de minutas para Sisprot Global Fiber.",
   icons: {
     icon: "/favicon.ico",
