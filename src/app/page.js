@@ -57,15 +57,28 @@ export default function Home() {
     };
   }, [router]);
 
-  const startRecording = async () => {
+  const startPresencialRecording = async () => {
     try {
+      const micStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      setupRecorder(micStream, [micStream]);
+    } catch (err) {
+      setError('No se pudo acceder al micrófono para la grabación presencial.');
+      console.error(err);
+    }
+  };
+
+  const startVirtualRecording = async () => {
+    try {
+      // 1. Obtener audio del sistema/pestaña
       const screenStream = await navigator.mediaDevices.getDisplayMedia({
         video: true,
         audio: true
       });
 
+      // 2. Obtener audio del micrófono
       const micStream = await navigator.mediaDevices.getUserMedia({ audio: true });
 
+      // 3. Mezclar ambos audios usando AudioContext
       const audioContext = new (window.AudioContext || window.webkitAudioContext)();
       const destination = audioContext.createMediaStreamDestination();
 
@@ -76,43 +89,44 @@ export default function Home() {
       screenSource.connect(destination);
 
       const combinedStream = destination.stream;
+      setupRecorder(combinedStream, [screenStream, micStream], audioContext);
 
-      const mediaRecorder = new MediaRecorder(combinedStream, { mimeType: 'audio/webm' });
-      mediaRecorderRef.current = mediaRecorder;
-      audioChunksRef.current = [];
-
-      mediaRecorder.ondataavailable = (event) => {
-        if (event.data.size > 0) {
-          audioChunksRef.current.push(event.data);
-        }
-      };
-
-      mediaRecorder.onstop = () => {
-        const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
-        const recordedFile = new File([audioBlob], `reunion_${Date.now()}.webm`, { type: 'audio/webm' });
-        setFile(recordedFile);
-        
-        [screenStream, micStream].forEach(s => s.getTracks().forEach(t => t.stop()));
-        audioContext.close();
-      };
-
-      mediaRecorder.start();
-      setIsRecording(true);
-      setRecordingTime(0);
-      timerRef.current = setInterval(() => {
-        setRecordingTime(prev => prev + 1);
-      }, 1000);
-      setError('');
-
-      screenStream.getVideoTracks()[0].onended = () => {
-        stopRecording();
-      };
+      // Si el usuario deja de compartir pantalla manualmente
+      screenStream.getVideoTracks()[0].onended = () => stopRecording();
 
     } catch (err) {
-      setError('Para grabar la reunión completa, debes aceptar compartir pantalla y marcar "Compartir audio".');
+      setError('Para grabar reuniones virtuales, debes aceptar compartir pantalla y marcar "Compartir audio".');
       console.error(err);
     }
   };
+
+  const setupRecorder = (stream, sourceStreams, context = null) => {
+    const mediaRecorder = new MediaRecorder(stream, { mimeType: 'audio/webm' });
+    mediaRecorderRef.current = mediaRecorder;
+    audioChunksRef.current = [];
+
+    mediaRecorder.ondataavailable = (event) => {
+      if (event.data.size > 0) audioChunksRef.current.push(event.data);
+    };
+
+    mediaRecorder.onstop = () => {
+      const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
+      const recordedFile = new File([audioBlob], `reunion_${Date.now()}.webm`, { type: 'audio/webm' });
+      setFile(recordedFile);
+      
+      sourceStreams.forEach(s => s.getTracks().forEach(t => t.stop()));
+      if (context) context.close();
+    };
+
+    mediaRecorder.start();
+    setIsRecording(true);
+    setRecordingTime(0);
+    timerRef.current = setInterval(() => {
+      setRecordingTime(prev => prev + 1);
+    }, 1000);
+    setError('');
+  };
+
 
   const stopRecording = () => {
     if (mediaRecorderRef.current && isRecording) {
@@ -313,25 +327,39 @@ export default function Home() {
             <h2 className="upload-title">Graba tu reunión</h2>
             <p className="upload-subtitle">Captura audio presencial o de reuniones virtuales (Meet, Discord, etc.)</p>
 
-            <div className="button-group" style={{ justifyContent: 'center' }}>
-              <button 
-                type="button" 
-                className={`btn ${isRecording ? 'btn-red' : 'btn-orange'}`}
-                onClick={isRecording ? stopRecording : startRecording}
-                style={{ minWidth: '240px' }}
-              >
-                {isRecording ? (
-                  <>
-                    <div className="recording-dot"></div>
-                    Detener Grabación ({formatTime(recordingTime)})
-                  </>
-                ) : (
-                  <>
-                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="3"/></svg>
-                    Iniciar Grabación en Vivo
-                  </>
-                )}
-              </button>
+            <div className="button-group" style={{ justifyContent: 'center', gap: '1rem', flexWrap: 'wrap' }}>
+              {isRecording ? (
+                <button 
+                  type="button" 
+                  className="btn btn-red"
+                  onClick={stopRecording}
+                  style={{ minWidth: '240px' }}
+                >
+                  <div className="recording-dot"></div>
+                  Detener Grabación ({formatTime(recordingTime)})
+                </button>
+              ) : (
+                <>
+                  <button 
+                    type="button" 
+                    className="btn btn-orange"
+                    onClick={startPresencialRecording}
+                    style={{ minWidth: '220px' }}
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ marginRight: '8px' }}><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" x2="12" y1="19" y2="22"/></svg>
+                    Reunión Presencial
+                  </button>
+                  <button 
+                    type="button" 
+                    className="btn btn-orange"
+                    onClick={startVirtualRecording}
+                    style={{ minWidth: '220px', background: 'linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%)' }}
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ marginRight: '8px' }}><rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><path d="m15 12-3-3-3 3"/><path d="m15 15-3-3-3 3"/></svg>
+                    Reunión Virtual (Meet/Zoom)
+                  </button>
+                </>
+              )}
             </div>
 
             {file && (
