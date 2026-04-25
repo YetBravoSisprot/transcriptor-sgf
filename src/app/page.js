@@ -13,6 +13,7 @@ export default function Home() {
   const [minuta, setMinuta] = useState('');
   const [transcription, setTranscription] = useState('');
   const [activeTab, setActiveTab] = useState('minuta');
+  const [isEditing, setIsEditing] = useState(false);
   const [error, setError] = useState('');
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isRecording, setIsRecording] = useState(false);
@@ -28,6 +29,7 @@ export default function Home() {
   const [date, setDate] = useState('');
   const [department, setDepartment] = useState('');
   const [participants, setParticipants] = useState('');
+  const [logoBase64, setLogoBase64] = useState('');
 
   useEffect(() => {
     const user = localStorage.getItem('user');
@@ -37,6 +39,19 @@ export default function Home() {
       setIsAuthenticated(true);
     }
     
+    // Convertir logo a Base64 para exportaciones
+    const img = new window.Image();
+    img.src = logo.src;
+    img.crossOrigin = "Anonymous";
+    img.onload = () => {
+      const canvas = document.createElement('canvas');
+      canvas.width = img.width;
+      canvas.height = img.height;
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(img, 0, 0);
+      setLogoBase64(canvas.toDataURL('image/png'));
+    };
+
     return () => {
       if (timerRef.current) clearInterval(timerRef.current);
     };
@@ -171,6 +186,7 @@ export default function Home() {
     return `
       <div style="font-family: Arial, sans-serif; padding: 40px; color: #333; max-width: 800px; margin: auto;">
         <div style="text-align: center; margin-bottom: 30px;">
+          ${logoBase64 ? `<img src="${logoBase64}" style="width: 120px; height: auto; margin-bottom: 15px;" />` : ''}
           <h1 style="color: #0a192f; margin-bottom: 5px;">SISPROT GLOBAL FIBER</h1>
           <p style="color: #666; text-transform: uppercase; letter-spacing: 2px; font-size: 12px;">Acta de Reunión Corporativa</p>
         </div>
@@ -342,6 +358,7 @@ export default function Home() {
                 type="date" 
                 value={date}
                 onChange={(e) => setDate(e.target.value)}
+                max={new Date().toISOString().split('T')[0]}
                 required
               />
             </div>
@@ -410,6 +427,14 @@ export default function Home() {
             <div style={{ display: 'flex', gap: '0.75rem' }}>
               <button 
                 type="button"
+                onClick={() => setIsEditing(!isEditing)} 
+                className={`btn ${isEditing ? 'btn-orange' : 'btn-dark'}`} 
+                style={{ padding: '0.5rem 1rem', fontSize: '0.875rem' }}
+              >
+                {isEditing ? 'Guardar Cambios' : 'Editar'}
+              </button>
+              <button 
+                type="button"
                 onClick={downloadWord} 
                 className="btn btn-dark" 
                 style={{ padding: '0.5rem 1rem', fontSize: '0.875rem', borderColor: 'rgba(255,255,255,0.1)' }}
@@ -436,7 +461,18 @@ export default function Home() {
           </div>
           <div className="markdown-card">
             <div className="markdown-content">
-              <ReactMarkdown>{activeTab === 'minuta' ? minuta : transcription}</ReactMarkdown>
+              {isEditing ? (
+                <textarea
+                  className="edit-textarea"
+                  value={activeTab === 'minuta' ? minuta : transcription}
+                  onChange={(e) => {
+                    if (activeTab === 'minuta') setMinuta(e.target.value);
+                    else setTranscription(e.target.value);
+                  }}
+                />
+              ) : (
+                <ReactMarkdown>{activeTab === 'minuta' ? minuta : transcription}</ReactMarkdown>
+              )}
             </div>
           </div>
         </section>
