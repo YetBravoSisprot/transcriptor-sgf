@@ -198,38 +198,20 @@ export default function Home() {
 
   const buildExportHtml = () => {
     return `
-      <div style="font-family: Arial, sans-serif; padding: 40px; color: #333; max-width: 800px; margin: auto;">
-        <div style="text-align: center; margin-bottom: 30px;">
-          ${logoBase64 ? `<img src="${logoBase64}" style="width: 120px; height: auto; margin-bottom: 15px;" />` : ''}
-          <h1 style="color: #0a192f; margin-bottom: 5px;">SISPROT GLOBAL FIBER</h1>
-          <p style="color: #666; text-transform: uppercase; letter-spacing: 2px; font-size: 12px;">Acta de Reunión Corporativa</p>
+      <div style="font-family: 'Times New Roman', serif; padding: 50px; color: #000; max-width: 800px; margin: auto; line-height: 1.5;">
+        <div style="text-align: center; margin-bottom: 40px;">
+          ${logoBase64 ? `<img src="${logoBase64}" style="width: 100px; height: auto; margin-bottom: 10px;" />` : ''}
+          <h2 style="margin: 0; font-size: 16px; letter-spacing: 1px;">SISPROT GLOBAL FIBER</h2>
+          <p style="margin: 5px 0; font-size: 10px; color: #666;">ACTA DE REUNIÓN CORPORATIVA</p>
         </div>
         
-        <div style="background: #f8fafc; padding: 20px; border-radius: 8px; margin-bottom: 30px;">
-          <h2 style="margin-top: 0; color: #0a192f;">${title}</h2>
-          <table style="width: 100%; border-collapse: collapse;">
-            <tr>
-              <td style="padding: 5px 0;"><strong>Fecha:</strong> ${date}</td>
-              <td style="padding: 5px 0;"><strong>Área:</strong> ${department}</td>
-            </tr>
-            <tr>
-              <td colspan="2" style="padding: 5px 0;"><strong>Participantes:</strong> ${participants}</td>
-            </tr>
-          </table>
-        </div>
-
-        <div style="margin-bottom: 40px;">
-          <h3 style="border-bottom: 2px solid #f59e0b; padding-bottom: 5px; color: #0a192f;">MINUTA ESTRUCTURADA</h3>
-          <div style="line-height: 1.6; white-space: pre-wrap;">${minuta}</div>
-        </div>
-
-        <div>
-          <h3 style="border-bottom: 2px solid #5499c7; padding-bottom: 5px; color: #0a192f;">TRANSCRIPCIÓN COMPLETA</h3>
-          <div style="line-height: 1.5; font-size: 13px; color: #444; white-space: pre-wrap;">${transcription}</div>
+        <div style="white-space: pre-wrap; font-size: 12pt;">
+          ${minuta}
         </div>
         
-        <div style="margin-top: 50px; text-align: center; font-size: 11px; color: #94a3b8;">
-          © ${new Date().getFullYear()} Sisprot Global Fiber - Generado por SGF IA Transcripción
+        <div style="margin-top: 60px; border-top: 1px solid #eee; pt: 20px; text-align: center; font-size: 9px; color: #999;">
+          Este documento es una minuta generada automáticamente por SGF IA.<br/>
+          © ${new Date().getFullYear()} Sisprot Global Fiber
         </div>
       </div>
     `;
