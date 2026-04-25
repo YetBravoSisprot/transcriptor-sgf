@@ -375,7 +375,17 @@ export default function Home() {
               <input 
                 type="date" 
                 value={date}
-                onChange={(e) => setDate(e.target.value)}
+                onChange={(e) => {
+                  const val = e.target.value;
+                  if (!val) return;
+                  const selectedDate = new Date(val + 'T00:00:00');
+                  const day = selectedDate.getDay();
+                  if (day === 0 || day === 6) {
+                    alert('Las minutas corporativas solo pueden registrarse de Lunes a Viernes.');
+                    return;
+                  }
+                  setDate(val);
+                }}
                 max={new Date().toISOString().split('T')[0]}
                 required
               />
