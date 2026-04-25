@@ -45,52 +45,23 @@ export async function processAudioForMinuta(audioBuffer, mimeType, fileName, met
     });
     
     const prompt = `
-      Genera una minuta de reunión profesional y estructurada a partir de la siguiente información.
-      IMPORTANTE:
+      Analiza el audio proporcionado y genera DOS secciones claramente diferenciadas:
+      
+      1. TRANSCRIPCIÓN COMPLETA: Una transcripción literal y fiel de todo lo que se dice en el audio.
+      2. MINUTA ESTRUCTURADA: Una minuta profesional siguiendo el formato corporativo.
+
+      IMPORTANTE PARA LA MINUTA:
       - No agregues introducciones, saludos ni frases explicativas.
-      - No incluyas textos como “¡Absolutamente!” ni comentarios sobre lo que estás haciendo.
-      - Ve directo al contenido.
       - Usa un tono corporativo, claro y conciso.
+      - Estructura obligatoria para la minuta:
+        MINUTA DE REUNIÓN
+        Título: ${title}
+        Fecha: ${date}
+        Área: ${department}
+        Participantes: ${participants}
+        Objetivo, Desarrollo, Decisiones, Tareas, Rutas Técnicas, Bloqueos, Conclusión y Próximos Pasos.
 
-      Estructura obligatoria:
-      MINUTA DE REUNIÓN
-      
-      Título de la reunión: ${title || '[Título de la reunión]'}
-      Fecha: ${date || '[Fecha]'}
-      Área o equipo: ${department || '[Área o equipo]'}
-      Participantes: ${participants || '[Participantes]'}
-      
-      Objetivo de la reunión
-      [Extraer del audio]
-
-      Desarrollo de la reunión (resumen claro y ordenado)
-      [Resumir los puntos clave del audio de forma ordenada]
-
-      Decisiones tomadas
-      [Listar acuerdos firmes]
-
-      Tareas y responsables
-      [Listar acciones pendientes con sus encargados]
-
-      Rutas / dependencias técnicas (si aplica)
-      [Mencionar aspectos técnicos relevantes]
-
-      Bloqueos o riesgos (si aplica)
-      [Identificar posibles obstáculos]
-
-      Conclusión
-      [Resumen final]
-
-      Próximos pasos
-      [Acciones inmediatas a seguir]
-
-      Reglas adicionales:
-      - Redacta en tercera persona.
-      - Sé concreto, evita redundancias.
-      - Organiza la información en bullets cuando sea necesario.
-      - Si falta información (fecha, participantes, etc.), deja el campo como placeholder entre corchetes si no fue proporcionado.
-
-      Información del Audio: Se adjunta el archivo de audio para su interpretación.
+      Usa exactamente este separador entre las dos secciones: [SEPARADOR_SGF]
     `;
 
     const result = await model.generateContent([
@@ -103,8 +74,13 @@ export async function processAudioForMinuta(audioBuffer, mimeType, fileName, met
       { text: prompt },
     ]);
 
-    const response = await result.response;
-    return response.text();
+    const responseText = await result.response.text();
+    const parts = responseText.split('[SEPARADOR_SGF]');
+    
+    return {
+      transcription: parts[0]?.trim() || "No se pudo generar la transcripción.",
+      minuta: parts[1]?.trim() || parts[0]?.trim() // Fallback if no separator found
+    };
 
   } finally {
     // Limpiar archivo temporal
