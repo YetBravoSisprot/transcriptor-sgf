@@ -204,29 +204,23 @@ export default function Home() {
     const formattedMinuta = cleanMinuta.replace(/\n/g, '<br/>');
 
     return `
-      <div style="font-family: 'Times New Roman', serif; padding: 40px; color: #000; max-width: 800px; margin: auto; border: 1px solid #f1f1f1;">
-        <table style="width: 100%; border-collapse: collapse; margin-bottom: 30px;">
-          <tr>
-            <td style="text-align: center; border-bottom: 4px solid #f59e0b; padding-bottom: 20px;">
-              ${logoBase64 ? `<img src="${logoBase64}" width="120" style="width: 120px; height: auto; margin-bottom: 10px;" />` : ''}
-              <div style="font-size: 20px; font-weight: bold; color: #0a192f; margin: 0;">SISPROT GLOBAL FIBER</div>
-              <div style="font-size: 11px; color: #666; text-transform: uppercase; letter-spacing: 2px; margin-top: 5px;">Acta de Reunión Corporativa</div>
-            </td>
-          </tr>
-        </table>
-        
-        <div style="font-size: 11.5pt; line-height: 1.5; text-align: justify; color: #1a1a1a;">
-          ${formattedMinuta}
+      <div style="font-family: Arial, Helvetica, sans-serif; padding: 20px; color: #000; max-width: 800px; margin: auto;">
+        <div style="text-align: center; margin-bottom: 30px;">
+          ${logoBase64 ? `<img src="${logoBase64}" width="120" height="60" style="width: 120px; height: 60px; object-fit: contain; margin-bottom: 10px;" />` : ''}
+          <div style="font-size: 22px; font-weight: bold; color: #0a192f; margin: 0;">SISPROT GLOBAL FIBER</div>
+          <div style="font-size: 11px; color: #666; text-transform: uppercase; letter-spacing: 2px; margin-top: 5px;">Acta de Reunión Corporativa</div>
+        </div>
+
+        <div style="border-top: 4px solid #f59e0b; padding-top: 20px; margin-bottom: 40px;">
+          <div style="font-size: 11pt; line-height: 1.6; text-align: left; color: #1a1a1a;">
+            ${formattedMinuta}
+          </div>
         </div>
         
-        <table style="width: 100%; margin-top: 60px; border-top: 1px solid #f59e0b;">
-          <tr>
-            <td style="padding-top: 15px; text-align: center; font-size: 9px; color: #999;">
-              <strong>SGF IA Transcriptor Pro</strong> - Documento de Confidencialidad Corporativa<br/>
-              © ${new Date().getFullYear()} Sisprot Global Fiber
-            </td>
-          </tr>
-        </table>
+        <div style="margin-top: 60px; border-top: 1px solid #f59e0b; padding-top: 15px; text-align: center; font-size: 10px; color: #999;">
+          <strong>SGF IA Transcriptor Pro</strong> - Documento Corporativo de Sisprot Global Fiber<br/>
+          Generado el ${new Date().toLocaleDateString()}
+        </div>
       </div>
     `;
   };
