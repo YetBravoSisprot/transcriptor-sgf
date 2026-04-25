@@ -14,9 +14,12 @@ export async function processAudioForMinuta(audioBuffer, mimeType, fileName, met
   // 1. Guardar temporalmente el archivo para subirlo a Gemini File API
   const ext = path.extname(fileName) || '.mp3';
   const tempPath = path.join(os.tmpdir(), `upload_${Date.now()}${ext}`);
+  console.log(`[Gemini] Guardando archivo temporal en: ${tempPath}`);
   fs.writeFileSync(tempPath, audioBuffer);
+
   try {
     // 2. Subir a Gemini File API
+    console.log(`[Gemini] Subiendo archivo a File API (${(audioBuffer.length / 1024 / 1024).toFixed(2)} MB)...`);
     const uploadResult = await fileManager.uploadFile(tempPath, {
       mimeType,
       displayName: fileName,
@@ -24,22 +27,31 @@ export async function processAudioForMinuta(audioBuffer, mimeType, fileName, met
 
     const fileUri = uploadResult.file.uri;
     const fileNameOnAI = uploadResult.file.name;
-    console.log(`Audio subido correctamente: ${fileUri}`);
+    console.log(`[Gemini] Audio subido correctamente: ${fileUri}`);
 
     // 3. Esperar a que el archivo esté procesado
+    console.log(`[Gemini] Esperando procesamiento interno de Google para ${fileNameOnAI}...`);
     let file = await fileManager.getFile(fileNameOnAI);
+    let attempts = 0;
     while (file.state === "PROCESSING") {
+      attempts++;
       process.stdout.write(".");
+      // Cada 30 segundos (6 * 5s) mostrar un mensaje de estado
+      if (attempts % 6 === 0) {
+        console.log(`\n[Gemini] Sigue procesando... (tiempo transcurrido: ${attempts * 5}s)`);
+      }
       await new Promise((resolve) => setTimeout(resolve, 5000));
       file = await fileManager.getFile(fileNameOnAI);
     }
+    console.log(`\n[Gemini] Estado final del archivo: ${file.state}`);
 
     if (file.state === "FAILED") {
-      console.error("Detalle del error de Google File API:", file.error);
-      throw new Error(`El procesamiento del audio falló: ${file.error ? file.error.message : 'Error desconocido'}`);
+      console.error("[Gemini] Detalle del error de Google File API:", file.error);
+      throw new Error(`El procesamiento del audio falló en Google AI: ${file.error ? file.error.message : 'Error desconocido'}`);
     }
 
-    // 4. Generar la minuta con el modelo disponible en el entorno
+    // 4. Generar la minuta con el modelo solicitado
+    console.log(`[Gemini] Generando contenido con el modelo: gemini-2.5-flash...`);
     const model = genAI.getGenerativeModel({ 
       model: "gemini-2.5-flash",
     });
@@ -85,6 +97,7 @@ export async function processAudioForMinuta(audioBuffer, mimeType, fileName, met
       Usa exactamente este separador entre las dos secciones: [SEPARADOR_SGF]
     `;
 
+    console.log(`[Gemini] Solicitando generación de contenido (esto puede tardar para audios largos)...`);
     const result = await model.generateContent([
       {
         fileData: {
@@ -95,6 +108,7 @@ export async function processAudioForMinuta(audioBuffer, mimeType, fileName, met
       { text: prompt },
     ]);
 
+    console.log(`[Gemini] Respuesta recibida de la AI.`);
     const responseText = await result.response.text();
     const parts = responseText.split('[SEPARADOR_SGF]');
     
@@ -103,10 +117,19 @@ export async function processAudioForMinuta(audioBuffer, mimeType, fileName, met
       minuta: parts[1]?.trim() || parts[0]?.trim() // Fallback if no separator found
     };
 
+  } catch (error) {
+    console.error("[Gemini] Error en processAudioForMinuta:", error);
+    throw error;
   } finally {
     // Limpiar archivo temporal
     if (fs.existsSync(tempPath)) {
-      fs.unlinkSync(tempPath);
+      console.log(`[Gemini] Limpiando archivo temporal: ${tempPath}`);
+      try {
+        fs.unlinkSync(tempPath);
+      } catch (e) {
+        console.warn(`[Gemini] No se pudo borrar el archivo temporal: ${e.message}`);
+      }
     }
   }
 }
+
