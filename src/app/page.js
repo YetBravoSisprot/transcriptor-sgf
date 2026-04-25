@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
+import Script from 'next/script';
 import ReactMarkdown from 'react-markdown';
 import Image from 'next/image';
 import logo from './logo.png';
@@ -43,28 +44,22 @@ export default function Home() {
 
   const startRecording = async () => {
     try {
-      // 1. Obtener audio del sistema/pestaña (para escuchar a los demás)
-      // Nota: El usuario debe marcar "Compartir audio" en el diálogo del navegador
       const screenStream = await navigator.mediaDevices.getDisplayMedia({
-        video: true, // Necesario para que aparezca la opción de compartir audio
+        video: true,
         audio: true
       });
 
-      // 2. Obtener audio del micrófono (para escucharte a ti)
       const micStream = await navigator.mediaDevices.getUserMedia({ audio: true });
 
-      // 3. Mezclar ambos audios usando AudioContext
       const audioContext = new (window.AudioContext || window.webkitAudioContext)();
       const destination = audioContext.createMediaStreamDestination();
 
       const micSource = audioContext.createMediaStreamSource(micStream);
       const screenSource = audioContext.createMediaStreamSource(screenStream);
 
-      // Conectar ambos al destino común
       micSource.connect(destination);
       screenSource.connect(destination);
 
-      // El stream final contiene ambos audios
       const combinedStream = destination.stream;
 
       const mediaRecorder = new MediaRecorder(combinedStream, { mimeType: 'audio/webm' });
@@ -82,7 +77,6 @@ export default function Home() {
         const recordedFile = new File([audioBlob], `reunion_${Date.now()}.webm`, { type: 'audio/webm' });
         setFile(recordedFile);
         
-        // Detener todos los tracks
         [screenStream, micStream].forEach(s => s.getTracks().forEach(t => t.stop()));
         audioContext.close();
       };
@@ -95,7 +89,6 @@ export default function Home() {
       }, 1000);
       setError('');
 
-      // Si el usuario deja de compartir pantalla manualmente, detener la grabación
       screenStream.getVideoTracks()[0].onended = () => {
         stopRecording();
       };
@@ -230,11 +223,13 @@ export default function Home() {
   };
 
   const downloadPdf = async () => {
-    const jspdfModule = await import('jspdf');
-    const jsPDF = jspdfModule.jsPDF || jspdfModule.default;
+    if (!window.jspdf) {
+      alert("El motor de PDF aún se está cargando. Por favor, espera un segundo.");
+      return;
+    }
+    const { jsPDF } = window.jspdf;
     const htmlContent = buildExportHtml();
     
-    // Crear un elemento temporal para el renderizado
     const tempDiv = document.createElement('div');
     tempDiv.style.width = '800px';
     tempDiv.style.padding = '0';
@@ -251,7 +246,7 @@ export default function Home() {
         },
         x: 0,
         y: 0,
-        width: 595, // Ancho de A4 en pt
+        width: 595,
         windowWidth: 800
       });
     } catch (e) {
@@ -261,14 +256,20 @@ export default function Home() {
     }
   };
 
+  if (!isAuthenticated) return null;
+
   return (
     <main className="animate-fade">
+      <Script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js" strategy="lazyOnload" />
+      <Script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js" strategy="lazyOnload" />
+      
       <div className="nav-header">
         <button onClick={handleLogout} className="logout-btn">
           <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" x2="9" y1="12" y2="12"/></svg>
           Cerrar Sesión
         </button>
       </div>
+
       <header>
         <div className="logo-container">
           <Image src={logo} alt="SGF Logo" width={80} height={40} style={{ objectFit: 'contain' }} />
@@ -324,7 +325,6 @@ export default function Home() {
             )}
           </div>
 
-          {/* Metadata Inputs */}
           <div className="metadata-grid">
             <div className="input-group">
               <label>Título de la reunión *</label>
@@ -414,7 +414,6 @@ export default function Home() {
                 className="btn btn-dark" 
                 style={{ padding: '0.5rem 1rem', fontSize: '0.875rem', borderColor: 'rgba(255,255,255,0.1)' }}
               >
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ marginRight: '5px' }}><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/></svg>
                 Word
               </button>
               <button 
@@ -423,16 +422,11 @@ export default function Home() {
                 className="btn btn-dark" 
                 style={{ padding: '0.5rem 1rem', fontSize: '0.875rem', borderColor: 'rgba(255,255,255,0.1)' }}
               >
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ marginRight: '5px' }}><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
                 PDF
               </button>
               <button 
                 type="button"
-                onClick={() => {
-                  const text = activeTab === 'minuta' ? minuta : transcription;
-                  navigator.clipboard.writeText(text);
-                  alert('Copiado al portapapeles');
-                }} 
+                onClick={copyToClipboard} 
                 className="btn btn-dark" 
                 style={{ padding: '0.5rem 1rem', fontSize: '0.875rem' }}
               >
