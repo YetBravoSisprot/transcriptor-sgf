@@ -144,11 +144,6 @@ export default function Home() {
                 Archivo seleccionado: <strong>{file.name}</strong>
               </div>
             )}
-            {!file && (
-              <div className="file-info-badge">
-                MP4, MOV, MP3, WAV (Hasta 500MB)
-              </div>
-            )}
           </div>
 
           {/* Metadata Inputs */}
@@ -165,8 +160,7 @@ export default function Home() {
             <div className="input-group">
               <label>Fecha</label>
               <input 
-                type="text" 
-                placeholder="Ej. 24 de Abril, 2024"
+                type="date" 
                 value={date}
                 onChange={(e) => setDate(e.target.value)}
               />
