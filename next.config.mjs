@@ -1,6 +1,6 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  transpilePackages: ['jspdf', 'html2canvas'],
+  /* config options here */
 };
 
 export default nextConfig;
