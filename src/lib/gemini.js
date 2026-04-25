@@ -53,13 +53,19 @@ export async function processAudioForMinuta(audioBuffer, mimeType, fileName, met
       IMPORTANTE PARA LA MINUTA:
       - No agregues introducciones, saludos ni frases explicativas.
       - Usa un tono corporativo, claro y conciso.
+      - Usa emojis para los campos de metadatos.
       - Estructura obligatoria para la minuta:
-        MINUTA DE REUNIÓN
-        Título: ${title}
-        Fecha: ${date}
-        Área: ${department}
-        Participantes: ${participants}
-        Objetivo, Desarrollo, Decisiones, Tareas, Rutas Técnicas, Bloqueos, Conclusión y Próximos Pasos.
+        MINUTA DE REUNIÓN: ${department}
+        📌 Tema: ${title}
+        📅 Fecha: ${date}
+        👥 Participantes: ${participants}
+        ⚠️ Ausentes: (Identifica si alguien faltó según el audio o deja vacío si no se menciona)
+        
+        RESUMEN
+        (Escribe aquí un resumen ejecutivo de lo tratado en párrafos profesionales)
+        
+        TAREAS PENDIENTES
+        (Lista de tareas con responsables si se mencionan, usando bullet points)
 
       Usa exactamente este separador entre las dos secciones: [SEPARADOR_SGF]
     `;
