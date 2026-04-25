@@ -48,24 +48,37 @@ export async function processAudioForMinuta(audioBuffer, mimeType, fileName, met
       Analiza el audio proporcionado y genera DOS secciones claramente diferenciadas:
       
       1. TRANSCRIPCIÓN COMPLETA: Una transcripción literal y fiel de todo lo que se dice en el audio.
-      2. MINUTA ESTRUCTURADA: Una minuta profesional siguiendo el formato corporativo.
+      2. MINUTA ESTRUCTURADA: Sigue exactamente las reglas a continuación.
 
-      IMPORTANTE PARA LA MINUTA:
+      REGLAS PARA LA MINUTA ESTRUCTURADA:
+      Genera una minuta de reunión profesional y estructurada a partir de la información del audio.
+
+      IMPORTANTE:
       - No agregues introducciones, saludos ni frases explicativas.
+      - No incluyas textos como "¡Absolutamente!" ni comentarios sobre lo que estás haciendo.
+      - Ve directo al contenido.
       - Usa un tono corporativo, claro y conciso.
-      - Usa emojis para los campos de metadatos.
-      - Estructura obligatoria para la minuta:
-        MINUTA DE REUNIÓN: ${department}
-        📌 Tema: ${title}
-        📅 Fecha: ${date}
-        👥 Participantes: ${participants}
-        ⚠️ Ausentes: (Identifica si alguien faltó según el audio o deja vacío si no se menciona)
-        
-        RESUMEN
-        (Escribe aquí un resumen ejecutivo de lo tratado en párrafos profesionales)
-        
-        TAREAS PENDIENTES
-        (Lista de tareas con responsables si se mencionan, usando bullet points)
+
+      Estructura obligatoria:
+      MINUTA DE REUNIÓN
+      Título: ${title || '[TÍTULO DE LA REUNIÓN]'}
+      Fecha: ${date || '[FECHA]'}
+      Área o equipo: ${department || '[ÁREA O EQUIPO]'}
+      Participantes: ${participants || '[PARTICIPANTES]'}
+      Objetivo de la reunión
+      Desarrollo de la reunión (resumen claro y ordenado)
+      Decisiones tomadas
+      Tareas y responsables
+      Rutas / dependencias técnicas (si aplica)
+      Bloqueos o riesgos (si aplica)
+      Conclusión
+      Próximos pasos
+
+      Reglas adicionales:
+      - Redacta en tercera persona.
+      - Sé concreto, evita redundancias.
+      - Organiza la información en bullets cuando sea necesario.
+      - Si falta información, deja el campo como placeholder entre corchetes.
 
       Usa exactamente este separador entre las dos secciones: [SEPARADOR_SGF]
     `;
