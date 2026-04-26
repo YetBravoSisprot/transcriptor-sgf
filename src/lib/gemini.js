@@ -8,46 +8,59 @@ const apiKey = process.env.GEMINI_API_KEY;
 const genAI = new GoogleGenerativeAI(apiKey);
 const fileManager = new GoogleAIFileManager(apiKey);
 
-export async function processAudioForMinuta(audioBuffer, mimeType, fileName, metadata = {}) {
+export async function processAudioForMinuta(audioBufferOrUri, mimeType, fileName, metadata = {}) {
   const { title, date, department, participants } = metadata;
   
-  // 1. Guardar temporalmente el archivo para subirlo a Gemini File API
-  const ext = path.extname(fileName) || '.mp3';
-  const tempPath = path.join(os.tmpdir(), `upload_${Date.now()}${ext}`);
-  console.log(`[Gemini] Guardando archivo temporal en: ${tempPath}`);
-  fs.writeFileSync(tempPath, audioBuffer);
+  let fileUri = null;
+  let fileNameOnAI = null;
+  let tempPath = null;
 
   try {
-    // 2. Subir a Gemini File API
-    console.log(`[Gemini] Subiendo archivo a File API (${(audioBuffer.length / 1024 / 1024).toFixed(2)} MB)...`);
-    const uploadResult = await fileManager.uploadFile(tempPath, {
-      mimeType,
-      displayName: fileName,
-    });
+    if (typeof audioBufferOrUri === 'string' && audioBufferOrUri.startsWith('https://')) {
+      // Caso 1: Ya se subió desde el cliente (URI directa)
+      fileUri = audioBufferOrUri;
+      console.log(`[Gemini] Usando URI de audio pre-subida: ${fileUri}`);
+    } else {
+      // Caso 2: Buffer de audio (Subida tradicional)
+      const audioBuffer = audioBufferOrUri;
+      const ext = path.extname(fileName) || '.mp3';
+      tempPath = path.join(os.tmpdir(), `upload_${Date.now()}${ext}`);
+      console.log(`[Gemini] Guardando archivo temporal en: ${tempPath}`);
+      fs.writeFileSync(tempPath, audioBuffer);
 
-    const fileUri = uploadResult.file.uri;
-    const fileNameOnAI = uploadResult.file.name;
-    console.log(`[Gemini] Audio subido correctamente: ${fileUri}`);
+      console.log(`[Gemini] Subiendo archivo a File API (${(audioBuffer.length / 1024 / 1024).toFixed(2)} MB)...`);
+      const uploadResult = await fileManager.uploadFile(tempPath, {
+        mimeType,
+        displayName: fileName,
+      });
 
-    // 3. Esperar a que el archivo esté procesado
-    console.log(`[Gemini] Esperando procesamiento interno de Google para ${fileNameOnAI}...`);
-    let file = await fileManager.getFile(fileNameOnAI);
-    let attempts = 0;
-    while (file.state === "PROCESSING") {
-      attempts++;
-      process.stdout.write(".");
-      // Cada 30 segundos (6 * 5s) mostrar un mensaje de estado
-      if (attempts % 6 === 0) {
-        console.log(`\n[Gemini] Sigue procesando... (tiempo transcurrido: ${attempts * 5}s)`);
-      }
-      await new Promise((resolve) => setTimeout(resolve, 5000));
-      file = await fileManager.getFile(fileNameOnAI);
+      fileUri = uploadResult.file.uri;
+      fileNameOnAI = uploadResult.file.name;
+      console.log(`[Gemini] Audio subido correctamente: ${fileUri}`);
     }
-    console.log(`\n[Gemini] Estado final del archivo: ${file.state}`);
 
-    if (file.state === "FAILED") {
-      console.error("[Gemini] Detalle del error de Google File API:", file.error);
-      throw new Error(`El procesamiento del audio falló en Google AI: ${file.error ? file.error.message : 'Error desconocido'}`);
+    // 3. Esperar a que el archivo esté procesado (Solo si tenemos el nombre del archivo en AI)
+    // Si solo tenemos el URI, intentamos procesar directamente, pero es mejor verificar el estado.
+    // Para simplificar, si viene de URI externa (cliente), asumimos que el cliente puede haber esperado o que Gemini lo manejará.
+    // Pero si el cliente nos dio el nombre del archivo, esperamos.
+    if (fileNameOnAI) {
+      console.log(`[Gemini] Esperando procesamiento interno de Google para ${fileNameOnAI}...`);
+      let file = await fileManager.getFile(fileNameOnAI);
+      let attempts = 0;
+      while (file.state === "PROCESSING") {
+        attempts++;
+        process.stdout.write(".");
+        if (attempts % 6 === 0) {
+          console.log(`\n[Gemini] Sigue procesando... (tiempo transcurrido: ${attempts * 5}s)`);
+        }
+        await new Promise((resolve) => setTimeout(resolve, 5000));
+        file = await fileManager.getFile(fileNameOnAI);
+      }
+      console.log(`\n[Gemini] Estado final del archivo: ${file.state}`);
+
+      if (file.state === "FAILED") {
+        throw new Error(`El procesamiento del audio falló en Google AI: ${file.error ? file.error.message : 'Error desconocido'}`);
+      }
     }
 
     // 4. Generar la minuta con el modelo solicitado
@@ -101,7 +114,7 @@ export async function processAudioForMinuta(audioBuffer, mimeType, fileName, met
     const result = await model.generateContent([
       {
         fileData: {
-          mimeType: uploadResult.file.mimeType,
+          mimeType: mimeType || 'audio/mp3',
           fileUri: fileUri
         }
       },
@@ -121,8 +134,7 @@ export async function processAudioForMinuta(audioBuffer, mimeType, fileName, met
     console.error("[Gemini] Error en processAudioForMinuta:", error);
     throw error;
   } finally {
-    // Limpiar archivo temporal
-    if (fs.existsSync(tempPath)) {
+    if (tempPath && fs.existsSync(tempPath)) {
       console.log(`[Gemini] Limpiando archivo temporal: ${tempPath}`);
       try {
         fs.unlinkSync(tempPath);
@@ -132,4 +144,5 @@ export async function processAudioForMinuta(audioBuffer, mimeType, fileName, met
     }
   }
 }
+
 
