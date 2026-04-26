@@ -144,10 +144,13 @@ export default function Home() {
     const mins = Math.floor(seconds / 60);
     const secs = seconds % 60;
     return `${mins}:${secs.toString().padStart(2, '0')}`;
-    const handleLogout = () => {
+  };
+
+  const handleLogout = () => {
     localStorage.removeItem('user');
     router.push('/login');
   };
+
 
   const handleSubmit = async (e) => {
     e.preventDefault();
