@@ -169,12 +169,6 @@ export default function Home() {
       // y problemas de tiempo de ejecución con archivos pesados.
       console.log('Iniciando subida directa a Google AI desde el navegador...');
       
-    try {
-      let fileUri = null;
-      let fileId = null;
-      
-      console.log('Iniciando subida directa a Google AI desde el navegador...');
-      
       // 1. Obtener URL de subida segura
       const urlRes = await fetch('/api/get-upload-url', {
         method: 'POST',
