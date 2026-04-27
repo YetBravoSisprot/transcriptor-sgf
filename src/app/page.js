@@ -163,57 +163,50 @@ export default function Home() {
 
     try {
       let fileUri = null;
+      let fileId = null;
       
-      // Si el archivo es grande (> 4MB), intentamos subirlo directamente a Google AI desde el cliente
-      // para evitar el límite de Vercel (4.5MB)
-      if (file.size > 4 * 1024 * 1024) {
-        console.log('Archivo grande detectado. Subiendo directamente a Google AI desde el navegador...');
-        const apiKey = process.env.NEXT_PUBLIC_GEMINI_API_KEY;
-        
-        if (!apiKey) {
-          throw new Error('Para archivos de más de 4MB, debes configurar NEXT_PUBLIC_GEMINI_API_KEY en tu archivo .env.local');
-        }
+      // Siempre usamos subida directa para evitar límites de Vercel (4.5MB)
+      // y problemas de tiempo de ejecución con archivos pesados.
+      console.log('Iniciando subida directa a Google AI desde el navegador...');
+      
+      // 1. Obtener URL de subida segura desde nuestro backend
+      const urlRes = await fetch('/api/get-upload-url', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          fileName: file.name,
+          fileSize: file.size,
+          fileType: file.type || 'audio/webm'
+        })
+      });
 
-        const uploadUrl = `https://generativelanguage.googleapis.com/upload/v1beta/files?key=${apiKey}`;
-        
-        // 1. Iniciar subida resumible
-        const initRes = await fetch(uploadUrl, {
-          method: 'POST',
-          headers: {
-            'X-Goog-Upload-Protocol': 'resumable',
-            'X-Goog-Upload-Command': 'start',
-            'X-Goog-Upload-Header-Content-Length': file.size,
-            'X-Goog-Upload-Header-Content-Type': file.type,
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({ file: { display_name: file.name } })
-        });
-
-        if (!initRes.ok) throw new Error('No se pudo iniciar la subida a Google AI.');
-        const targetUrl = initRes.headers.get('X-Goog-Upload-URL');
-
-        // 2. Subir el archivo
-        const uploadRes = await fetch(targetUrl, {
-          method: 'POST',
-          headers: {
-            'X-Goog-Upload-Offset': '0',
-            'X-Goog-Upload-Command': 'upload, finalize',
-          },
-          body: file
-        });
-
-        if (!uploadRes.ok) throw new Error('Error al subir el archivo a Google AI.');
-        const uploadData = await uploadRes.json();
-        fileUri = uploadData.file.uri;
-        console.log('Subida directa completada:', fileUri);
+      if (!urlRes.ok) {
+        const errorData = await urlRes.json();
+        throw new Error(errorData.error || 'No se pudo obtener la URL de subida.');
       }
+
+      const { uploadUrl } = await urlRes.json();
+
+      // 2. Subir el archivo directamente a Google AI (sin pasar por Vercel)
+      const uploadRes = await fetch(uploadUrl, {
+        method: 'POST',
+        headers: {
+          'X-Goog-Upload-Offset': '0',
+          'X-Goog-Upload-Command': 'upload, finalize',
+        },
+        body: file
+      });
+
+      if (!uploadRes.ok) throw new Error('Error al subir el audio a los servidores de Google.');
+      const uploadData = await uploadRes.json();
+      
+      fileUri = uploadData.file.uri;
+      fileId = uploadData.file.name; // ID necesario para que el servidor espere el procesamiento
+      console.log('Subida directa exitosa:', fileUri);
 
       const formData = new FormData();
-      if (fileUri) {
-        formData.append('fileUri', fileUri);
-      } else {
-        formData.append('audio', file);
-      }
+      formData.append('fileUri', fileUri);
+      formData.append('fileId', fileId);
       
       formData.append('title', title);
       formData.append('date', date);
