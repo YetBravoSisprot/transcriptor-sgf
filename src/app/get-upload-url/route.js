@@ -25,12 +25,17 @@ export async function POST(request) {
     });
 
     if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.error?.message || 'Error al iniciar sesión de subida en Google');
+      const errorText = await response.text();
+      console.error('[Google AI API Error]:', errorText);
+      throw new Error(`Google AI Error: ${response.status} - ${errorText.substring(0, 100)}`);
     }
 
-    // La URL de destino real viene en el encabezado 'x-goog-upload-url'
-    const targetUrl = response.headers.get('x-goog-upload-url');
+    // La URL de destino real viene en 'x-goog-upload-url' o 'location'
+    const targetUrl = response.headers.get('x-goog-upload-url') || response.headers.get('location');
+
+    if (!targetUrl) {
+      throw new Error('No se recibió la URL de subida de los servidores de Google.');
+    }
 
     return NextResponse.json({ uploadUrl: targetUrl });
 
