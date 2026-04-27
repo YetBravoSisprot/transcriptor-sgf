@@ -169,7 +169,13 @@ export default function Home() {
       // y problemas de tiempo de ejecución con archivos pesados.
       console.log('Iniciando subida directa a Google AI desde el navegador...');
       
-      // 1. Obtener URL de subida segura desde nuestro backend
+    try {
+      let fileUri = null;
+      let fileId = null;
+      
+      console.log('Iniciando subida directa a Google AI desde el navegador...');
+      
+      // 1. Obtener URL de subida segura
       const urlRes = await fetch('/api/get-upload-url', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -180,14 +186,17 @@ export default function Home() {
         })
       });
 
-      if (!urlRes.ok) {
-        const errorData = await urlRes.json();
-        throw new Error(errorData.error || 'No se pudo obtener la URL de subida.');
+      const urlText = await urlRes.text();
+      let uploadUrl;
+      try {
+        const urlData = JSON.parse(urlText);
+        if (!urlRes.ok) throw new Error(urlData.error || 'Error al obtener URL');
+        uploadUrl = urlData.uploadUrl;
+      } catch (e) {
+        throw new Error(`Error en /api/get-upload-url: ${urlText.substring(0, 100)}...`);
       }
 
-      const { uploadUrl } = await urlRes.json();
-
-      // 2. Subir el archivo directamente a Google AI (sin pasar por Vercel)
+      // 2. Subir el archivo directamente a Google AI
       const uploadRes = await fetch(uploadUrl, {
         method: 'POST',
         headers: {
@@ -197,11 +206,16 @@ export default function Home() {
         body: file
       });
 
-      if (!uploadRes.ok) throw new Error('Error al subir el audio a los servidores de Google.');
-      const uploadData = await uploadRes.json();
-      
-      fileUri = uploadData.file.uri;
-      fileId = uploadData.file.name; // ID necesario para que el servidor espere el procesamiento
+      const uploadText = await uploadRes.text();
+      try {
+        const uploadData = JSON.parse(uploadText);
+        if (!uploadRes.ok) throw new Error('Error en subida directa');
+        fileUri = uploadData.file.uri;
+        fileId = uploadData.file.name;
+      } catch (e) {
+        throw new Error(`Error en subida a Google: ${uploadText.substring(0, 100)}...`);
+      }
+
       console.log('Subida directa exitosa:', fileUri);
 
       const formData = new FormData();
@@ -218,14 +232,17 @@ export default function Home() {
         body: formData,
       });
 
-      const data = await response.json();
-
-      if (response.ok) {
-        setMinuta(data.minuta);
-        setTranscription(data.transcription);
-      } else {
-        console.error('Error del servidor:', data);
-        setError(data.details || data.error || 'Algo salió mal al procesar el audio.');
+      const summarizeText = await response.text();
+      try {
+        const data = JSON.parse(summarizeText);
+        if (response.ok) {
+          setMinuta(data.minuta);
+          setTranscription(data.transcription);
+        } else {
+          setError(data.details || data.error || 'Algo salió mal al procesar el audio.');
+        }
+      } catch (e) {
+        throw new Error(`Error en /api/summarize (Vercel Timeout?): ${summarizeText.substring(0, 100)}...`);
       }
     } catch (err) {
       console.error('Error durante el proceso:', err);
