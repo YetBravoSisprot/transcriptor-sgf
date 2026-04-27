@@ -10,7 +10,7 @@ const fileManager = new GoogleAIFileManager(apiKey);
 
 export async function processAudioForMinuta(audioBufferOrUri, mimeType, fileName, metadata = {}) {
   const { title, date, department, participants } = metadata;
-  
+
   let fileUri = null;
   let fileNameOnAI = null;
   let tempPath = null;
@@ -65,10 +65,10 @@ export async function processAudioForMinuta(audioBufferOrUri, mimeType, fileName
 
     // 4. Generar la minuta con el modelo solicitado
     console.log(`[Gemini] Generando contenido con el modelo: gemini-2.5-flash...`);
-    const model = genAI.getGenerativeModel({ 
+    const model = genAI.getGenerativeModel({
       model: "gemini-2.5-flash",
     });
-    
+
     const prompt = `
       Analiza el audio proporcionado y genera DOS secciones claramente diferenciadas:
       
@@ -124,7 +124,7 @@ export async function processAudioForMinuta(audioBufferOrUri, mimeType, fileName
     console.log(`[Gemini] Respuesta recibida de la AI.`);
     const responseText = await result.response.text();
     const parts = responseText.split('[SEPARADOR_SGF]');
-    
+
     return {
       transcription: parts[0]?.trim() || "No se pudo generar la transcripción.",
       minuta: parts[1]?.trim() || parts[0]?.trim() // Fallback if no separator found
