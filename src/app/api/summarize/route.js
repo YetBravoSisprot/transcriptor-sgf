@@ -22,8 +22,9 @@ export async function POST(request) {
 
     let result;
     if (fileUri) {
-      console.log(`Procesando vía URI directa: ${fileUri}`);
-      result = await processAudioForMinuta(fileUri, 'audio/webm', 'reunion.webm', {
+      const fileId = formData.get('fileId'); // El ID único de Google (files/...)
+      console.log(`Procesando vía URI directa: ${fileUri} (ID: ${fileId})`);
+      result = await processAudioForMinuta(fileUri, 'audio/webm', fileId || 'reunion.webm', {
         title,
         date,
         department,
